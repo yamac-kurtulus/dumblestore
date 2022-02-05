@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from ..models import User
-from .factories import UserFactory, AdminFactory
+from .factories import HarryPotterFactory, AdminFactory
 
 
 class UserTests(TestCase):
@@ -15,6 +15,6 @@ class UserTests(TestCase):
         assert user.username is None
 
     def test_user_should_be_unique(self):
-        harry = UserFactory()
+        harry = HarryPotterFactory()
         with self.assertRaises(IntegrityError):
             User.objects.create(email=harry.email)

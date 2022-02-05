@@ -1,9 +1,9 @@
-import django
 import factory
+from factory import Faker
 from ..models import User
 
 
-class UserFactory(factory.django.DjangoModelFactory):
+class HarryPotterFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
@@ -16,6 +16,16 @@ class UserFactory(factory.django.DjangoModelFactory):
 class AdminFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
-        django_get_or_create = "email"
+        django_get_or_create = ("email",)
 
     email = "albus@hogwarts.com"
+
+
+class RandomUserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    password = Faker("password")
