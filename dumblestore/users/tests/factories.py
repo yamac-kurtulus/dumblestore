@@ -3,7 +3,7 @@ from factory import Faker
 from ..models import User
 
 
-class HarryPotterFactory(factory.django.DjangoModelFactory):
+class CustomerUser(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
@@ -25,6 +25,7 @@ class RandomUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
+    id = None
     first_name = Faker("first_name")
     last_name = Faker("last_name")
     email = Faker("email")
