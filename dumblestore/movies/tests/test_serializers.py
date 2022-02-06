@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..serializers import UserSerializer
+from movies.serializers import UserSerializer
 from .factories import RandomUserFactory
 
 

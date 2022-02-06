@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "movies",
-    "users",
 ]
 
 MIDDLEWARE = [
@@ -100,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Use custom model
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "movies.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
