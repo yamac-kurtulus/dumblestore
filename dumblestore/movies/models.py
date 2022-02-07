@@ -43,13 +43,16 @@ class User(AbstractUser):
 
     username = None
     email = models.EmailField("Email Address", unique=True)
-    first_name = models.CharField("first_name", max_length=50, blank=False)
-    last_name = models.CharField("last_name", max_length=50, blank=False)
+    first_name = models.CharField("First Name", max_length=50, blank=False)
+    last_name = models.CharField("Last Name", max_length=50, blank=False)
     objects = UserManager()
 
     # Override Django's default Username Field
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
+
+    class Meta:
+        ordering = ["pk"]
 
     def __str__(self):
         return self.email

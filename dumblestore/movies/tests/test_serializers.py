@@ -1,12 +1,15 @@
-from django.test import TestCase
+from rest_framework.test import APITestCase, APIRequestFactory
 from movies.serializers import UserSerializer
 from .factories import RandomUserFactory
 
 
-class UserSerializerTests(TestCase):
+class UserSerializerTests(APITestCase):
     def setUp(self):
         self.randomUser = RandomUserFactory.create()
-        self.serializer = UserSerializer(instance=self.randomUser)
+        request_stub = APIRequestFactory()
+        self.serializer = UserSerializer(
+            instance=self.randomUser, context={"request": request_stub.get("/")}
+        )
 
     def test_contains_expected_fields(self):
         data = self.serializer.data

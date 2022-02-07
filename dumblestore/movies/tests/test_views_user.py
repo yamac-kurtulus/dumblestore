@@ -21,14 +21,12 @@ class UsersTests(APITestCase):
         RandomUserFactory.create(email="user2@hogwarts.com")
         RandomUserFactory.create(email="user3@hogwarts.com")
 
-        # use this as post data:
-
     def test_customers_cannot_view_users(self):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_view_user_details(self):
-        url = urljoin(self.url, "user1@hogwarts.com/")
+        url = urljoin(self.url, "1/")
         resp = self.client.get(self.url + "")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -48,12 +46,13 @@ class UsersTests(APITestCase):
             "first_name": "Lord",
             "last_name": "Voldi",
             "password": "Asd1234!",
+            "email": "voldi@voldecorp.com",
         }
-        resp = self.client.put(self.url + "user1@hogwarts.com/", data=postData)
+        resp = self.client.put(self.url + "2/", data=postData)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_delete_users(self):
-        resp = self.client.delete(self.url + "user1@hogwarts.com/")
+        resp = self.client.delete(self.url + "2/")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_can_view_own_details(self):
@@ -83,25 +82,38 @@ class AdminUserTests(APITestCase):
 
     def test_admin_can_view_users_with_pagination(self):
         RandomUserFactory.create_batch(100)
-        self.url = urljoin(self.url, "?page=2")
+        self.url = urljoin(self.url, "?page=3")
         resp = self.client.get(self.url)
-        self.assertEqual(len(resp.data), 20)
+        self.assertEqual(len(resp.data["results"]), 20)
 
     def test_admin_can_view_user_details(self):
-        self.url = urljoin(self.url, "user1@hogwarts.com/")
+        self.url = urljoin(self.url, "2/")
         resp = self.client.get(self.url)
-        resp = self.client.put(self.url, resp.data)
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_admin_can_create_user(self):
+        data = {
+            "email": "voldi@voldecorp.com",
+            "first_name": "Lord",
+            "last_name": "Voldi",
+            "password": "Asd1234!",
+        }
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         pass
 
     def test_admin_can_update_user(self):
-        self.url = urljoin(self.url, "user1@hogwarts.com/")
-        resp = self.client.get(self.url)
-        resp = self.client.put(self.url, resp.data)
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.url = urljoin(self.url, "2/")
+        putData = {
+            "email": "voldi@voldecorp.com",
+            "first_name": "Lord",
+            "last_name": "Voldi",
+            "password": "Asd1234!",
+        }
+        resp = self.client.put(self.url, putData)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_admin_can_delete_user(self):
-
-        pass
+        self.url = urljoin(self.url, "2/")
+        resp = self.client.delete(self.url)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
