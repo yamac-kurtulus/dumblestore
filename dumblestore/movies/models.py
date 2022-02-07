@@ -68,9 +68,6 @@ class Genre(models.Model):
     class Meta:
         ordering = ["name"]
 
-    def __str__(self):
-        return self.name
-
 
 class Movie(models.Model):
     """
@@ -82,6 +79,3 @@ class Movie(models.Model):
 
     class Meta:
         ordering = ["title"]
-
-    def __str__(self):
-        return self.title

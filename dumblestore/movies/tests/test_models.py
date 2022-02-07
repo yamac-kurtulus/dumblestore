@@ -4,7 +4,7 @@ from django.test import TestCase
 from .factories import CustomerUserFactory
 
 from ..models import User, Movie, Genre
-from .factories import CustomerUserFactory, RandomUserFactory
+from .factories import CustomerUserFactory
 
 
 class UserTests(TestCase):
@@ -18,7 +18,7 @@ class UserTests(TestCase):
         assert User.objects.first() is not None
         assert user.username is None
 
-    def test_user_should_be_unique(self):
+    def test_user_is_unique(self):
         harry = CustomerUserFactory.create()
         with self.assertRaises(IntegrityError):
             User.objects.create(
@@ -28,11 +28,7 @@ class UserTests(TestCase):
                 last_name=harry.last_name,
             )
 
-    def test_user_should_not_be_created_with_empty_required_fields(self):
-        """
-        Ensures user is not created when any of the following is empty:
-        first_name, last_name, email, password
-        """
+    def test_user_not_created_with_empty_required_fields(self):
         required_data = {
             "first_name": "Lord",
             "last_name": "Voldi",
@@ -50,13 +46,57 @@ class UserTests(TestCase):
                 self.assertRaises(ValidationError, user.full_clean)
 
 
-class MovieTests(TestCase):
-    def test_movie_should_not_be_created_with_no_name(self):
+class GenreTests(TestCase):
+    def test_genre_is_created(self):
+        genre = Genre(name="Scifi")
+        genre.full_clean()
+        genre.save()
+
+    def test_genre_not_created_with_empty_name(self):
         with self.assertRaises(ValidationError):
-            movie = Movie.objects.create(title="")
+            genre = Genre(name="")
+            genre.full_clean()
+            genre.save()
+
+    def test_genre_not_created_with_empty_name(self):
+        with self.assertRaises(ValidationError):
+            genre = Genre(name="")
+            genre.full_clean()
+            genre.save()
+
+    def test_genre_ordered_by_name(self):
+        Genre.objects.bulk_create(
+            [
+                Genre(name="Scifi"),
+                Genre(name="Action"),
+                Genre(name="Romance"),
+                Genre(name="Drama"),
+            ]
+        )
+        first = Genre.objects.first()
+        last = Genre.objects.last()
+        self.assertEqual(first.name, "Action")
+        self.assertEqual(last.name, "Scifi")
+
+
+class MovieTests(TestCase):
+    def test_movie_is_created_with_existing_genres(self):
+        genre1 = Genre.objects.create(name="Scifi")
+        genre2 = Genre.objects.create(name="Action")
+        movie = Movie.objects.create(
+            title="Blade Runner",
+        )
+        movie.genres.set([genre1, genre2])
+        movie.save()
+        self.assertEqual(movie.title, "Blade Runner")
+        self.assertEqual([x.name for x in movie.genres.all()], ["Action", "Scifi"])
+
+    def test_movie_not_created_with_no_name(self):
+        with self.assertRaises(ValidationError):
+            movie = Movie(title="")
             movie.full_clean()
 
-    def test_movie_should_not_be_created_with_duplicateName(self):
+    def test_movie_not_created_with_duplicateName(self):
         with self.assertRaises(IntegrityError):
-            Movie.objects.create(title="Matrix")
-            Movie.objects.create(title="Matrix")
+            Movie.objects.create(title="Blade Runner")
+            Movie.objects.create(title="Blade Runner")
