@@ -10,4 +10,4 @@ class IsOwner(permissions.BasePermission):
         return request.method == "GET" and obj.email == request.user.email
 
     def has_permission(self, request, view):
-        return view.action != "list" and request.method == "GET"
+        return view.action == "me"

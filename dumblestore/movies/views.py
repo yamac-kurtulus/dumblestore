@@ -17,7 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwner | permissions.IsAdminUser]
 
     @action(detail=False, permission_classes=[IsOwner])
     def me(self, request):
