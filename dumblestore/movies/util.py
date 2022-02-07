@@ -14,7 +14,7 @@ def read_data(filename):
         email = log["email"]
         try:
             password = f"{log['first_name']}42"
-            user = User(
+            user = User.objects.create_user(
                 first_name=log["first_name"],
                 last_name=log["last_name"],
                 email=email,
