@@ -3,7 +3,7 @@ from django.forms import ValidationError
 from django.test import TestCase
 from .factories import CustomerUserFactory
 
-from ..models import User
+from ..models import User, Movie, Genre
 from .factories import CustomerUserFactory, RandomUserFactory
 
 
@@ -48,3 +48,14 @@ class UserTests(TestCase):
                 data.pop(field_name)
                 user = User(**data)
                 self.assertRaises(ValidationError, user.full_clean)
+
+
+class MovieTests(TestCase):
+    def test_movie_should_not_be_created_with_no_name(self):
+        with self.assertRaises(ValidationError):
+            Movie.objects.create(title="")
+
+    def test_movie_should_not_be_created_with_duplicateName(self):
+        with self.assertRaises(IntegrityError):
+            Movie.objects.create(title="Matrix")
+            Movie.objects.create(title="Matrix")
