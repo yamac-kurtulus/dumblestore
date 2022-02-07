@@ -28,6 +28,11 @@ DEBUG = True
 ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1", "dumblestore.herokuapp.com"]
 
 
+CSRF_TRUSTED_ORIGINS = ["https://" + x for x in ALLOWED_HOSTS] + [
+    "http://" + x for x in ALLOWED_HOSTS
+]
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -126,8 +131,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
