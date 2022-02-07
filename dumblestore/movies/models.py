@@ -36,10 +36,15 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+
+    """
+    User model that uses the custom manager to manage auth
+    """
+
     username = None
     email = models.EmailField("Email Address", unique=True)
-    first_name = models.CharField("first_name", max_length=50)
-    last_name = models.CharField("last_name", max_length=50)
+    first_name = models.CharField("first_name", max_length=50, blank=False)
+    last_name = models.CharField("last_name", max_length=50, blank=False)
     objects = UserManager()
 
     # Override Django's default Username Field
@@ -69,7 +74,7 @@ class Movie(models.Model):
     Movie object. Has a title and multiple genres
     """
 
-    title = models.CharField(max_length=100, db_index=True, unique=True)
+    title = models.CharField(max_length=100, db_index=True, unique=True, blank=False)
     genres = models.ManyToManyField(Genre)
 
     class Meta:
