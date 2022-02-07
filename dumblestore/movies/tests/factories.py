@@ -3,7 +3,7 @@ from factory import Faker
 from ..models import User
 
 
-class CustomerUser(factory.django.DjangoModelFactory):
+class CustomerUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 

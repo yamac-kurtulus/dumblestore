@@ -38,11 +38,13 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField("Email Address", unique=True)
+    first_name = models.CharField("first_name", max_length=50)
+    last_name = models.CharField("last_name", max_length=50)
     objects = UserManager()
 
     # Override Django's default Username Field
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     def __str__(self):
         return self.email
