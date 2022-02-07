@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -16,44 +17,43 @@ class UsersTests(APITestCase):
         self.url = reverse("user-list")
 
         # populate it
-        RandomUserFactory.create_batch(5)
+        RandomUserFactory.create(email="user1@hogwarts.com")
+        RandomUserFactory.create(email="user2@hogwarts.com")
+        RandomUserFactory.create(email="user3@hogwarts.com")
 
-        self.postData = UserSerializer(instance=RandomUserFactory.build()).data
-        self.postData.pop("id")  # id must not be present when creating
+        # use this as post data:
 
     def test_customers_cannot_view_users(self):
-        """
-        Ensure a logged in customer cannot view user list
-        """
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_view_user_details(self):
-        """
-        Ensure a logged in customer cannot view other users' details
-        """
-        resp = self.client.get(self.url + "1/")
+        url = urljoin(self.url, "user1@hogwarts.com/")
+        resp = self.client.get(self.url + "")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_create_users(self):
-        """
-        Ensure a logged in customer cannot create a new user
-        """
-        resp = self.client.post(path=self.url, data=self.postData)
+        u = RandomUserFactory.build(email="user3@hogwarts.com")
+        postData = {
+            "first_name": "Lord",
+            "last_name": "Voldi",
+            "email": "noseless@voldi.com",
+            "password": "Asd1234!",
+        }
+        resp = self.client.post(path=self.url, data=postData)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_update_users(self):
-        """
-        Ensure a logged in customer cannot update a user
-        """
-        resp = self.client.put(self.url + "3/", data=self.postData)
+        postData = {
+            "first_name": "Lord",
+            "last_name": "Voldi",
+            "password": "Asd1234!",
+        }
+        resp = self.client.put(self.url + "user1@hogwarts.com/", data=postData)
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_cannot_delete_users(self):
-        """
-        Ensure a logged in customer cannot delete a user
-        """
-        resp = self.client.delete(self.url + "3/")
+        resp = self.client.delete(self.url + "user1@hogwarts.com/")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_customers_can_view_own_details(self):
@@ -64,37 +64,44 @@ class UsersTests(APITestCase):
 
 
 class AdminUserTests(APITestCase):
+    def setUp(self):
+        """
+        Creates or gets an admin user and uses that to test the functionality
+        """
+        self.APIuser = AdminFactory.create()
+        self.client.force_authenticate(user=self.APIuser)
+        self.url = reverse("user-list")
+
+        # populate it
+        RandomUserFactory.create(email="user1@hogwarts.com")
+        RandomUserFactory.create(email="user2@hogwarts.com")
+        RandomUserFactory.create(email="user3@hogwarts.com")
+
     def test_admin_can_view_users(self):
-        """
-        Ensure superuser can view user list
-        """
-        pass
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data), 4)
 
     def test_admin_can_view_users_with_pagination(self):
-        """
-        Ensure superuser can view user list
-        """
-        pass
+        RandomUserFactory.create_batch(100)
+        self.url = urljoin(self.url, "?page=2")
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data), 20)
 
     def test_admin_can_view_user_details(self):
-        """
-        Ensure superuser can view user details
-        """
-        pass
+        self.url = urljoin(self.url, "user1@hogwarts.com/")
+        resp = self.client.get(self.url)
+        resp = self.client.put(self.url, resp.data)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
     def test_admin_can_create_user(self):
-        """
-        Ensure superuser can Create User
-        """
-
-    def test_admin_can_update_user(self):
-        """
-        Ensure superuser can Update User
-        """
         pass
 
+    def test_admin_can_update_user(self):
+        self.url = urljoin(self.url, "user1@hogwarts.com/")
+        resp = self.client.get(self.url)
+        resp = self.client.put(self.url, resp.data)
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
     def test_admin_can_delete_user(self):
-        """
-        Ensure superuser can Delete User
-        """
+
         pass

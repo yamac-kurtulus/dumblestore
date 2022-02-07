@@ -53,7 +53,8 @@ class UserTests(TestCase):
 class MovieTests(TestCase):
     def test_movie_should_not_be_created_with_no_name(self):
         with self.assertRaises(ValidationError):
-            Movie.objects.create(title="")
+            movie = Movie.objects.create(title="")
+            movie.full_clean()
 
     def test_movie_should_not_be_created_with_duplicateName(self):
         with self.assertRaises(IntegrityError):

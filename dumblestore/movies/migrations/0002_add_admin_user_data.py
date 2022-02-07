@@ -5,7 +5,12 @@ from movies.models import User, UserManager
 
 def create_super_user(apps, schema_editor):
     # ideally password should be taken from an environment variable
-    User.objects.create_superuser(email="albus@hogwarts.com", password="kendra1881")
+    User.objects.create_superuser(
+        email="albus@hogwarts.com",
+        password="kendra1881",
+        first_name="albus",
+        last_name="dumbledore",
+    )
 
 
 class Migration(migrations.Migration):
