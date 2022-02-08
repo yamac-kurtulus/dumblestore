@@ -78,7 +78,7 @@ class AdminUserTests(APITestCase):
 
     def test_admin_can_view_users(self):
         resp = self.client.get(self.url)
-        self.assertEqual(len(resp.data), 4)
+        self.assertEqual(len(resp.data["results"]), 4)
 
     def test_admin_can_view_users_with_pagination(self):
         RandomUserFactory.create_batch(100)

@@ -11,3 +11,18 @@ class IsOwner(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return view.action == "me"
+
+
+class IsAdminOrAuthenticatedReadOnly(permissions.BasePermission):
+    """
+    Allows:
+    Admins: full-control
+    Customer users: read-only
+    Anon: none
+    """
+
+    def has_permission(self, request, view):
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        return True

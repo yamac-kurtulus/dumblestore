@@ -1,3 +1,4 @@
+from ast import arg
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -11,6 +12,7 @@ class UserManager(BaseUserManager):
     """
 
     def create_user(self, email, password, **kwargs):
+
         """
         Create and save a User with the given email and password.
         """
@@ -38,7 +40,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
 
     """
-    User model that uses the custom manager to manage auth
+    User model that uses the custom manager to manage authorization with email
     """
 
     username = None
@@ -60,22 +62,25 @@ class User(AbstractUser):
 
 class Genre(models.Model):
     """
-    Genres can belong to multiple movies
+    Genres can belong to multiple movies.
     """
 
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
 
     class Meta:
         ordering = ["name"]
 
+    def __str__(self):
+        return self.name
+
 
 class Movie(models.Model):
     """
-    Movie object. Has a title and multiple genres
+    Movie object. Has a title and multiple genres.
     """
 
     title = models.CharField(max_length=100, db_index=True, unique=True, blank=False)
-    genres = models.ManyToManyField(Genre)
+    genres = models.ManyToManyField(Genre, related_name="genres")
 
     class Meta:
         ordering = ["title"]

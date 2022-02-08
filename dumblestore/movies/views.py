@@ -1,12 +1,11 @@
-from django.shortcuts import render
-
-from .models import User
-from .serializers import UserSerializer
-from rest_framework import viewsets, permissions, status
+from codecs import lookup_error
+from .models import User, Movie
+from .serializers import MovieSerializer, UserSerializer
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .permissions import IsOwner
+from .permissions import IsAdminOrAuthenticatedReadOnly, IsOwner
 from django.contrib.auth.models import AnonymousUser
 
 
@@ -33,3 +32,15 @@ class UserViewSet(viewsets.ModelViewSet):
         if user:
             serializer_obj = self.get_serializer(instance=user)
         return Response(serializer_obj.data)
+
+
+class MovieViewSet(viewsets.ModelViewSet):
+    """
+    Api endpoint for the Movies.
+    Admins have all the CRUD functionality
+    Customers can view movies and movie details
+    """
+
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+    permission_classes = [IsAdminOrAuthenticatedReadOnly]

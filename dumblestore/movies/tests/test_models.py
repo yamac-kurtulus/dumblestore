@@ -78,6 +78,11 @@ class GenreTests(TestCase):
         self.assertEqual(first.name, "Action")
         self.assertEqual(last.name, "Scifi")
 
+    def test_genre_not_created_with_duplicate_name(self):
+        with self.assertRaises(IntegrityError):
+            Genre.objects.create(name="Action")
+            Genre.objects.create(name="Action")
+
 
 class MovieTests(TestCase):
     def test_movie_is_created_with_existing_genres(self):
