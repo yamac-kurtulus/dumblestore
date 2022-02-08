@@ -85,7 +85,7 @@ class MovieSerializerTests(TestCase):
             instance=self.movieModel, context={"request": None}
         )
         data = serializer.data
-        self.assertCountEqual(data.keys(), ["id", "title", "url", "genres", "slug"])
+        self.assertCountEqual(data.keys(), ["title", "url", "genres", "slug"])
 
     def test_movie_is_read_correctly(self):
         """
@@ -96,7 +96,7 @@ class MovieSerializerTests(TestCase):
         )
         data = serializer.data
         self.assertEqual(data["title"], self.movieModel.title)
-        self.assertEqual(data["id"], self.movieModel.id)
+        self.assertEqual(data["slug"], self.movieModel.slug)
         genres = data["genres"]
         self.assertCountEqual(
             genres, [genre.name for genre in self.movieModel.genres.all()]

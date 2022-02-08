@@ -1,7 +1,9 @@
 from ast import arg
+from autoslug import AutoSlugField
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.urls import reverse
 
 # Create your models here.
 
@@ -81,6 +83,10 @@ class Movie(models.Model):
 
     title = models.CharField(max_length=100, db_index=True, unique=True, blank=False)
     genres = models.ManyToManyField(Genre, related_name="genres")
+    slug = AutoSlugField(populate_from="title", unique=True, db_index=True, blank=True)
 
     class Meta:
         ordering = ["title"]
+
+    def get_absolute_url(self):
+        return reverse("questions:detail", kwargs={"slug": self.slug, "pk": self.pk})

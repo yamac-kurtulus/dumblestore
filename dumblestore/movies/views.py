@@ -44,3 +44,4 @@ class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
     permission_classes = [IsAdminOrAuthenticatedReadOnly]
+    lookup_field = "slug"

@@ -1,7 +1,8 @@
-import random
+import json
 from urllib.parse import urljoin
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from django.views import View
+from rest_framework.test import APITestCase, APIRequestFactory, force_authenticate
 from rest_framework import status
 from ..models import Genre, Movie
 from .factories import (
@@ -29,10 +30,10 @@ class MovieViewAdminTests(APITestCase):
         Genre.objects.create(name="Adventure"),
         Genre.objects.create(name="Documentary"),
 
-        MovieWithManyGenresFactory(genre_count=3)
-        MovieWithManyGenresFactory(genre_count=2)
-        MovieWithManyGenresFactory(genre_count=3)
-        MovieWithManyGenresFactory(genre_count=1)
+        self.m1 = MovieWithManyGenresFactory(genre_count=3)
+        self.m2 = MovieWithManyGenresFactory(genre_count=2)
+        self.m3 = MovieWithManyGenresFactory(genre_count=3)
+        self.m4 = MovieWithManyGenresFactory(genre_count=1)
 
     # Test basic API access
 
@@ -47,32 +48,31 @@ class MovieViewAdminTests(APITestCase):
         self.assertEqual(len(resp.data["results"]), 20)
 
     def test_admin_can_view_movie_details(self):
-        url = urljoin(self.url, "2/")
+        url = urljoin(self.url, self.m2.slug + "/")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-    # def test_admin_can_create_movie(self):
-    #     data = {"title": "New Movie", "genres": ["Scifi", "Drama", "New Genre"]}
-    #     resp = self.client.post(self.url, data)
-    #     self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-    #     # ensure it is created correctly
-    #     new_movie_url = urljoin(self.url, str(resp.data["id"]))
-    #     self.client.get(self.url)
-    #     self.assertEqual(resp.data["title"], "New Movie")
-    #     self.assertCountEqual(resp.data["genres"], ["Scifi", "Drama", "New Genre"])
+    def test_admin_can_create_movie(self):
+        data = {"title": "New Movie", "genres": ["Scifi", "Drama", "New Genre"]}
+        resp = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # ensure it is created correctly
+        self.client.get(self.url)
+        self.assertEqual(resp.data["title"], "New Movie")
+        self.assertCountEqual(resp.data["genres"], ["Scifi", "Drama", "New Genre"])
 
-    # def test_admin_can_update_movie(self):
-    #     self.url = urljoin(self.url, "2/")
-    #     putData = {"title": "New Title", "genres": ["Scifi", "Drama", "New Genre"]}
-    #     resp = self.client.put(self.url, putData)
-    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    #     # ensure it is updated correctly
-    #     self.client.get(self.url, putData)
-    #     self.assertEqual(resp.data["title"], "New Title")
-    #     self.assertCountEqual(resp.data["genres"], ["Scifi", "Drama", "New Genre"])
+    def test_admin_can_update_movie(self):
+        self.url = urljoin(self.url, self.m2.slug + "/")
+        putData = {"title": "New Title", "genres": ["Scifi", "Comedy"]}
+        resp = self.client.put(self.url, putData, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # ensure it is updated correctly
+        self.client.get(self.url, putData)
+        self.assertEqual(resp.data["title"], "New Title")
+        self.assertCountEqual(resp.data["genres"], ["Scifi", "Comedy"])
 
     def test_admin_can_delete_user(self):
-        url = urljoin(self.url, "2/")
+        url = urljoin(self.url, self.m2.slug + "/")
         resp = self.client.delete(url)
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         resp = self.client.get(url)
@@ -80,10 +80,10 @@ class MovieViewAdminTests(APITestCase):
 
     # Rest of the tests deal with functional requirements
 
-    # def test_cannot_create_movies_without_genre(self):
-    #     data = {"title": "New Movie"}
-    #     resp = self.client.post(self.url, data)
-    #     self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_cannot_create_movies_without_genre(self):
+        data = {"title": "New Movie"}
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class MovieCustomerViewTests(APITestCase):
