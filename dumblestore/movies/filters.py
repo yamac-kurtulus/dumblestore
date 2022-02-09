@@ -17,4 +17,4 @@ class GenreOrderingFilter(BaseFilterBackend):
             return queryset.order_by(Lower("title"))
         if ordering_param == "-title":
             return queryset.order_by(Lower("title")).reverse()
-        return super().filter_queryset(request, queryset, view)
+        return queryset

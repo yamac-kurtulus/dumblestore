@@ -19,16 +19,16 @@ movies = [
     for movie in data
 ]
 
-
+base_url = "https://dumblestore.herokuapp.com"
 cred = {"username": "albus@hogwarts.com", "password": "kendra1881"}
-token_req = requests.post("http://localhost:8000/api-token-auth/", data=cred)
+token_req = requests.post(f"{base_url}/api-token-auth/", data=cred)
 
 token = "Token " + token_req.json()["token"]
-r = requests.get("http://localhost:8000/api/movies", headers={"Authorization": token})
+r = requests.get("f"{base_url}"/api/movies", headers={"Authorization": token})
 
 for user in users:
     user_req = requests.post(
-        "http://localhost:8000/api/users/",
+        "f"{base_url}"/api/users/",
         headers={"Authorization": token, "content-type": "application/json"},
         data=json.dumps(user),
     )
