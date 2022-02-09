@@ -1,11 +1,12 @@
-from codecs import lookup_error
+from .filters import GenreOrderingFilter
 from .models import User, Movie
 from .serializers import MovieSerializer, UserSerializer
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .permissions import IsAdminOrAuthenticatedReadOnly, IsOwner
+from rest_framework.filters import OrderingFilter
+from .permissions import IsAuthenticatedReadOnly, IsOwner
 from django.contrib.auth.models import AnonymousUser
 
 
@@ -43,5 +44,8 @@ class MovieViewSet(viewsets.ModelViewSet):
 
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
-    permission_classes = [IsAdminOrAuthenticatedReadOnly]
+    permission_classes = [IsAuthenticatedReadOnly | permissions.IsAdminUser]
     lookup_field = "slug"
+    filter_backends = [GenreOrderingFilter]
+    ordering_fields = ["title", "genres"]
+    ordering = ["title"]

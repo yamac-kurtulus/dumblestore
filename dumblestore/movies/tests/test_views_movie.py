@@ -78,8 +78,6 @@ class MovieViewAdminTests(APITestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-    # Rest of the tests deal with functional requirements
-
     def test_cannot_create_movies_without_genre(self):
         data = {"title": "New Movie"}
         resp = self.client.post(self.url, data)
@@ -96,51 +94,79 @@ class MovieCustomerViewTests(APITestCase):
         """
         self.APIuser = CustomerUserFactory.create()
         self.client.force_authenticate(user=self.APIuser)
-
         self.url = reverse("movie-list")
 
-        # populate it
-        # RandomUserFactory.create(email="user1@hogwarts.com")
-        # RandomUserFactory.create(email="user2@hogwarts.com")
-        # RandomUserFactory.create(email="user3@hogwarts.com")
+        # populate
+        scifi = Genre.objects.create(name="Scifi")
+        action = Genre.objects.create(name="Action")
+        romance = Genre.objects.create(name="Romance")
+        drama = Genre.objects.create(name="Drama")
+        comedy = Genre.objects.create(name="Comedy")
+        adventure = Genre.objects.create(name="Adventure")
 
+        self.m1 = MovieWithManyGenresFactory(title="Matrix")
+        self.m1.genres.set([scifi, action])
+        self.m2 = MovieWithManyGenresFactory(title="Blade Runner")
+        self.m2.genres.set([scifi, adventure, drama])
 
-#     def test_customers_cannot_view_users(self):
-#         resp = self.client.get(self.url)
-#         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.m3 = MovieWithManyGenresFactory(title="Titanic")
+        self.m3.genres.set([drama, romance])
+        self.m4 = MovieWithManyGenresFactory(title="Harry Potter")
+        self.m4.genres.set([adventure, action, comedy])
 
-#     def test_customers_cannot_view_user_details(self):
-#         url = urljoin(self.url, "1/")
-#         resp = self.client.get(self.url + "")
-#         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+    def test_customer_can_view_movies(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data["results"]), 4)
 
-#     def test_customers_cannot_create_users(self):
-#         u = RandomUserFactory.build(email="user3@hogwarts.com")
-#         postData = {
-#             "first_name": "Lord",
-#             "last_name": "Voldi",
-#             "email": "noseless@voldi.com",
-#             "password": "Asd1234!",
-#         }
-#         resp = self.client.post(path=self.url, data=postData)
-#         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+    def test_customer_can_view_movies_with_pagination(self):
+        MovieWithManyGenresFactory.create_batch(100, genre_count=2)
+        url = urljoin(self.url, "?page=3")
+        resp = self.client.get(url)
+        self.assertEqual(len(resp.data["results"]), 20)
 
-#     def test_customers_cannot_update_users(self):
-#         postData = {
-#             "first_name": "Lord",
-#             "last_name": "Voldi",
-#             "password": "Asd1234!",
-#             "email": "voldi@voldecorp.com",
-#         }
-#         resp = self.client.put(self.url + "2/", data=postData)
-#         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+    def test_customer_can_view_movie_details(self):
+        url = urljoin(self.url, self.m2.slug + "/")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-#     def test_customers_cannot_delete_users(self):
-#         resp = self.client.delete(self.url + "2/")
-#         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+    def test_customer_can_not_create_movie(self):
+        data = {"title": "New Movie", "genres": ["Scifi", "Drama", "New Genre"]}
+        resp = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
-#     def test_customers_can_view_own_details(self):
-#         resp = self.client.get(self.url + "me/")
-#         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-#         self.assertEqual(resp.data["email"], self.APIuser.email)
-#         pass
+    def test_customer_can_not_update_movie(self):
+        self.url = urljoin(self.url, self.m2.slug + "/")
+        putData = {"title": "New Title", "genres": ["Scifi", "Comedy"]}
+        resp = self.client.put(self.url, putData, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_customer_can_not_delete_user(self):
+        url = urljoin(self.url, self.m2.slug + "/")
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_sorted_by_title_by_default(self):
+        resp = self.client.get(self.url)
+        data = resp.json()
+        results = data["results"]
+        titles = [item["title"] for item in results]
+        self.assertListEqual(
+            titles, ["Blade Runner", "Harry Potter", "Matrix", "Titanic"]
+        )
+        for item in results:
+            genres = item["genres"]
+            self.assertListEqual(genres, sorted(genres))
+
+    def test_can_be_sortable_by_genre(self):
+        sorted_url = urljoin(self.url, "?ordering=genres")
+        resp = self.client.get(sorted_url)
+        data = resp.json()
+        results = data["results"]
+        titles = [item["title"] for item in results]
+        self.assertListEqual(
+            titles, ["Harry Potter", "Matrix", "Blade Runner", "Titanic"]
+        )
+        for item in results:
+            genres = item["genres"]
+            self.assertListEqual(genres, sorted(genres))
+        print(titles)

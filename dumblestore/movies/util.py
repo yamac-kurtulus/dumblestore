@@ -1,41 +1,45 @@
-from distutils.command.build_scripts import first_line_re
-import email
 import json
-
-from django.forms import ValidationError
-from .models import User, Movie, Genre
+import requests
 
 
-def read_data(filename):
-    f = open(filename)
-    data = json.load(f)
+f = open("./MOCK_DATA.json")
+data = json.load(f)
 
-    for log in data:
-        email = log["email"]
-        try:
-            password = f"{log['first_name']}42"
-            user = User.objects.create_user(
-                first_name=log["first_name"],
-                last_name=log["last_name"],
-                email=email,
-                password=password,
-            )
-            user.full_clean()
-            user.save()
-        except ValidationError as v:
-            print(f"{email} already exists. Skipping")
+users = [
+    {
+        "first_name": movie["first_name"],
+        "last_name": movie["last_name"],
+        "password": movie["first_name"] + "42",
+        "email": movie["email"],
+    }
+    for movie in data
+]
+movies = [
+    {"title": movie["Movie Title"], "genres": movie["Movie Genres"].split("|")}
+    for movie in data
+]
 
-        title = log["Movie Title"]
-        try:
-            movie, created = Movie.objects.get_or_create(title=title)
-            movie.full_clean()
-            movie.save()
 
-            genres = log["Movie Genres"]
-            for genre in genres.split("|"):
-                g, created = Genre.objects.get_or_create(name=genre)
-                movie.genres.add(g)
-                movie.save()
+cred = {"username": "albus@hogwarts.com", "password": "kendra1881"}
+token_req = requests.post("http://localhost:8000/api-token-auth/", data=cred)
 
-        except ValidationError as v:
-            print(f"{title} already exists. Skipping")
+token = "Token " + token_req.json()["token"]
+r = requests.get("http://localhost:8000/api/movies", headers={"Authorization": token})
+
+for user in users:
+    user_req = requests.post(
+        "http://localhost:8000/api/users/",
+        headers={"Authorization": token, "content-type": "application/json"},
+        data=json.dumps(user),
+    )
+
+for movie in movies:
+    movie_req = (
+        requests.post(
+            "http://localhost:8000/api/movies.json/",
+            headers={"Authorization": token, "content-type": "application/json"},
+            data=json.dumps(movie),
+        ),
+    )
+
+print(movie_req.json(), user_req.json())

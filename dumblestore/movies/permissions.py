@@ -1,7 +1,7 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class IsOwner(permissions.BasePermission):
+class IsOwner(BasePermission):
     """
     Allows user to only view their own information
     """
@@ -13,7 +13,7 @@ class IsOwner(permissions.BasePermission):
         return view.action == "me"
 
 
-class IsAdminOrAuthenticatedReadOnly(permissions.BasePermission):
+class IsAuthenticatedReadOnly(BasePermission):
     """
     Allows:
     Admins: full-control
@@ -22,7 +22,7 @@ class IsAdminOrAuthenticatedReadOnly(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return True
+        return not request.user.is_anonymous and request.method in SAFE_METHODS
 
     def has_object_permission(self, request, view, obj):
-        return True
+        return not request.user.is_anonymous and request.method in SAFE_METHODS

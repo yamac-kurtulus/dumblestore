@@ -78,15 +78,21 @@ class Genre(models.Model):
 
 class Movie(models.Model):
     """
-    Movie object. Has a title and multiple genres.
+    Movie object. Has a title and multiple genres. Genre order index is used for sorting
     """
 
     title = models.CharField(max_length=100, db_index=True, unique=True, blank=False)
     genres = models.ManyToManyField(Genre, related_name="genres")
     slug = AutoSlugField(populate_from="title", unique=True, db_index=True, blank=True)
+    genre_order_index = models.CharField(
+        max_length=200, db_index=True, unique=False, default=""
+    )
 
     class Meta:
         ordering = ["title"]
 
     def get_absolute_url(self):
         return reverse("questions:detail", kwargs={"slug": self.slug, "pk": self.pk})
+
+    def __str__(self):
+        return self.title

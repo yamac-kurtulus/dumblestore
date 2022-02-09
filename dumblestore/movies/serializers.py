@@ -25,7 +25,7 @@ class MovieSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ["title", "url", "genres", "slug"]
+        fields = ["title", "url", "genres", "slug", "genre_order_index"]
         extra_kwargs = {"url": {"lookup_field": "slug", "read_only": "True"}}
         lookup_field = "slug"
 
@@ -33,6 +33,7 @@ class MovieSerializer(serializers.ModelSerializer):
         """
         Override to add genre if not exists
         """
+
         genres = validated_data.pop("genres")
         instance = super().create(validated_data)
         instance = self.handle_genres(genres, instance)
@@ -45,7 +46,6 @@ class MovieSerializer(serializers.ModelSerializer):
         """
         Custom update function to update the genre fields
         """
-
         genres = validated_data.pop("genres")
         instance = super().update(instance, validated_data)
         instance = self.handle_genres(genres, instance)
@@ -56,8 +56,11 @@ class MovieSerializer(serializers.ModelSerializer):
         existing_genre_set = set(str(genre) for genre in existing_genres)
         missing_genres = set(genres) - existing_genre_set
         Genre.objects.bulk_create(Genre(name=genre) for genre in missing_genres)
-        movie_genres = existing_genres = Genre.objects.filter(name__in=genres).all()
+        movie_genres = Genre.objects.filter(name__in=genres).distinct().all()
         instance.genres.set(movie_genres)
+        instance.genre_order_index = "|".join(str(genre) for genre in movie_genres)
+        # print(instance.genre_order_index)
+        instance.save()
         return instance
 
 
