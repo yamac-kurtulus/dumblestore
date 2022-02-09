@@ -1,0 +1,24 @@
+@startuml E-R diagram
+Entity Movie {
+    -id : int
+    +title : string
+}
+
+Entity User {
+    -password: string
+    +id : int 
+    +first_name: string
+    +last_name: string
+    +email: string
+    +is_admin: bool
+}
+
+Entity Genre{
+    -id
+    +name
+}
+
+Movie "0.." *-- "1.." Genre
+User --r--> Movie: <<Views>>
+
+@enduml

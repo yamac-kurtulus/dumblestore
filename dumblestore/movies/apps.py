@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from movies.util import init_db
 
 
 class MoviesConfig(AppConfig):
@@ -7,3 +8,5 @@ class MoviesConfig(AppConfig):
 
     def ready(self):
         import movies.signals
+
+        init_db()

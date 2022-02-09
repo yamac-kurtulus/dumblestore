@@ -10,11 +10,12 @@ from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from django.utils.decorators import method_decorator
+from django.core.cache.backends.locmem import LocMemCache
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    Api endpoint for the Users. Admins have all the CRUD functionality whereas regular users can only get information about themselves.
+    Api endpoint for the Users. Admins have all the CRUD functionality whereas regular users can only get information about themselves on '/me' endpoint.
     """
 
     queryset = User.objects.all()
@@ -39,9 +40,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class MovieViewSet(viewsets.ModelViewSet):
     """
-    Api endpoint for the Movies.
-    Admins have all the CRUD functionality
-    Customers can view movies and movie details
+    Api endpoint for the Movies. Admins have all the CRUD functionality. Customers can view movies and movie details
+    Sorted on 'title' by default. Use '?ordering=genres', ?ordering=-genres', or '?ordering=-title' to change ordering.
+
+    This view uses in memory cache.
     """
 
     queryset = Movie.objects.all()

@@ -23,10 +23,20 @@ irm -method GET http://dumblestore.herokuapp.com/api/movies/ -H  @{Authorization
 ```
 
 - **Session Authentication**: `/api-auth/` Primarily for compatibility with browsers as they don't provide a nice way to use token based authentication. Use the "login" form on the top of the API pages while browsing. CSRF protection enabled, therefore use token authentication for cross origin API requests.
-- **Django Admin**: `/admin` direct access to database tables accessible by superuser.
+- **Django Admin**: `/admin/` direct access to database tables accessible by superuser.
 
 Superuser name: `albus@hogwarts.com`
 Superuser password: `kendra1881`
 
-Customer passwords are in format: `f"{first_name}42"`
+Customer passwords are in following format: `f"{first_name}42"`
 email: `bbutt2@bloomberg.com` password: `Bryan42`
+
+## DB Schema:
+
+A high level overview is shown here. More details are Accessible through Django admin on `/admin/`endpoint.
+
+!![DB Schema](/img/Schema.png)
+
+## Limitation:
+
+Trailing slashes are mandatory while sending request. Also setting content-type header explicitly never hurts
