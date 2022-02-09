@@ -83,6 +83,36 @@ class MovieViewAdminTests(APITestCase):
         resp = self.client.post(self.url, data)
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_cache_invalidated_on_delete(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data["results"]), 4)
+        url = urljoin(self.url, self.m2.slug + "/")
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data["results"]), 3)
+
+    def test_cache_invalidated_on_create(self):
+
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data["results"]), 4)
+        data = {"title": "New Movie", "genres": ["Scifi", "Drama", "New Genre"]}
+        resp = self.client.post(self.url, data=data, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        resp = self.client.get(self.url)
+        self.assertEqual(len(resp.data["results"]), 5)
+
+    def test_cache_invalidated_on_update(self):
+        self.url = urljoin(self.url, self.m2.slug + "/")
+        putData = {"title": "New Title", "genres": ["Scifi", "Comedy"]}
+        resp = self.client.put(self.url, putData, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # ensure it is updated correctly
+        self.client.get(self.url, putData)
+        self.assertEqual(resp.data["title"], "New Title")
+
 
 class MovieCustomerViewTests(APITestCase):
     def setUp(self):
@@ -104,14 +134,22 @@ class MovieCustomerViewTests(APITestCase):
         comedy = Genre.objects.create(name="Comedy")
         adventure = Genre.objects.create(name="Adventure")
 
-        self.m1 = MovieWithManyGenresFactory(title="Matrix")
+        self.m1 = MovieWithManyGenresFactory(
+            title="Matrix", genre_order_index="Action|Scifi"
+        )
         self.m1.genres.set([scifi, action])
-        self.m2 = MovieWithManyGenresFactory(title="Blade Runner")
+        self.m2 = MovieWithManyGenresFactory(
+            title="Blade Runner", genre_order_index="Adventure|Drama|Scifi"
+        )
         self.m2.genres.set([scifi, adventure, drama])
 
-        self.m3 = MovieWithManyGenresFactory(title="Titanic")
+        self.m3 = MovieWithManyGenresFactory(
+            title="Titanic", genre_order_index="Drama|Romance"
+        )
         self.m3.genres.set([drama, romance])
-        self.m4 = MovieWithManyGenresFactory(title="Harry Potter")
+        self.m4 = MovieWithManyGenresFactory(
+            title="Harry Potter", genre_order_index="Action|Adventure|Comedy"
+        )
         self.m4.genres.set([adventure, action, comedy])
 
     def test_customer_can_view_movies(self):
@@ -163,6 +201,7 @@ class MovieCustomerViewTests(APITestCase):
         data = resp.json()
         results = data["results"]
         titles = [item["title"] for item in results]
+        print(results)
         self.assertListEqual(
             titles, ["Harry Potter", "Matrix", "Blade Runner", "Titanic"]
         )

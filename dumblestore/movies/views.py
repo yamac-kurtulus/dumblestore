@@ -5,9 +5,11 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.filters import OrderingFilter
 from .permissions import IsAuthenticatedReadOnly, IsOwner
 from django.contrib.auth.models import AnonymousUser
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
+from django.utils.decorators import method_decorator
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -49,3 +51,12 @@ class MovieViewSet(viewsets.ModelViewSet):
     filter_backends = [GenreOrderingFilter]
     ordering_fields = ["title", "genres"]
     ordering = ["title"]
+
+    @method_decorator(cache_page(60 * 60))
+    @method_decorator(
+        vary_on_headers(
+            "Authorization",
+        )
+    )
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)

@@ -24,11 +24,11 @@ cred = {"username": "albus@hogwarts.com", "password": "kendra1881"}
 token_req = requests.post(f"{base_url}/api-token-auth/", data=cred)
 
 token = "Token " + token_req.json()["token"]
-r = requests.get("f"{base_url}"/api/movies", headers={"Authorization": token})
+r = requests.get(f"{base_url}/api/movies", headers={"Authorization": token})
 
 for user in users:
     user_req = requests.post(
-        "f"{base_url}"/api/users/",
+        f"{base_url}/api/users/",
         headers={"Authorization": token, "content-type": "application/json"},
         data=json.dumps(user),
     )
@@ -36,10 +36,8 @@ for user in users:
 for movie in movies:
     movie_req = (
         requests.post(
-            "http://localhost:8000/api/movies.json/",
+            f"{base_url}/api/movies/",
             headers={"Authorization": token, "content-type": "application/json"},
             data=json.dumps(movie),
         ),
     )
-
-print(movie_req.json(), user_req.json())

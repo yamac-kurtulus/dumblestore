@@ -53,7 +53,7 @@ class User(AbstractUser):
 
     # Override Django's default Username Field
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name"]
+    REQUIRED_FIELDS = ["first_name", "last_name", "password"]
 
     class Meta:
         ordering = ["pk"]

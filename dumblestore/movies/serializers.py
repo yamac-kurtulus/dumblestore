@@ -12,7 +12,12 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "email", "url"]
+        fields = ["id", "first_name", "last_name", "email", "url", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
 
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -22,6 +27,7 @@ class MovieSerializer(serializers.ModelSerializer):
     """
 
     genres = serializers.ListSerializer(child=serializers.CharField())
+    genre_order_index = serializers.HiddenField(default="")
 
     class Meta:
         model = Movie
